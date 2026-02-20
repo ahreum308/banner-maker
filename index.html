@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SNS 배너 메이커</title>
+  <title>행사배너 간편메이커</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@
 
   <!-- Header -->
   <header class="app-header">
-    <h1 class="app-title">SNS 배너 메이커</h1>
+    <h1 class="app-title">행사배너 간편메이커</h1>
     <div class="header-right">
       <button class="header-btn" id="save-project-btn" title="프로젝트 저장">💾 저장</button>
       <button class="header-btn" id="load-project-btn" title="프로젝트 불러오기">📂 불러오기</button>
@@ -55,28 +55,6 @@
         </button>
       </section>
 
-      <!-- Template Selector -->
-      <section class="panel-section">
-        <h2 class="section-title">템플릿 선택</h2>
-        <div class="template-grid template-grid--4col">
-          <button class="template-card" data-template="mainPage">
-            <span class="template-icon">📸</span>
-            <span class="template-name">인스타그램</span>
-          </button>
-          <button class="template-card" data-template="detailPage">
-            <span class="template-icon">📄</span>
-            <span class="template-name">상세페이지</span>
-          </button>
-          <button class="template-card" data-template="popupBanner">
-            <span class="template-icon">💥</span>
-            <span class="template-name">팝업배너</span>
-          </button>
-          <button class="template-card" data-template="freeForm">
-            <span class="template-icon">🎨</span>
-            <span class="template-name">자유 제작</span>
-          </button>
-        </div>
-      </section>
 
       <!-- Basic Info Panel -->
       <section class="panel-section hidden" id="basic-info-panel">
@@ -451,6 +429,41 @@
 
     <!-- Preview Area -->
     <div class="preview-area">
+      <!-- Banner Type Selector -->
+      <div class="banner-type-bar">
+        <span class="banner-type-label">배너종류</span>
+        <div class="banner-type-btns">
+          <button class="template-card" data-template="mainPage">
+            <span class="template-icon">📸</span>
+            <span class="template-name">인스타그램</span>
+          </button>
+          <button class="template-card" data-template="detailPage">
+            <span class="template-icon">📄</span>
+            <span class="template-name">상세페이지</span>
+          </button>
+          <button class="template-card" data-template="popupBanner">
+            <span class="template-icon">💥</span>
+            <span class="template-name">팝업배너</span>
+          </button>
+          <button class="template-card" data-template="freeForm">
+            <span class="template-icon">🎨</span>
+            <span class="template-name">자유 제작</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Usage Guide -->
+      <div class="usage-guide" id="usage-guide">
+        <h3 class="usage-guide-title">사용방법</h3>
+        <ol class="usage-guide-steps">
+          <li><strong>행사정보 입력</strong> - 왼쪽 패널에서 브랜드, 행사 제목, 혜택 정보를 입력합니다.</li>
+          <li><strong>배너 생성하기</strong> - 정보 입력 후 "행사배너 생성하기" 버튼을 클릭합니다.</li>
+          <li><strong>배너종류 선택</strong> - 상단에서 인스타그램, 상세페이지, 팝업배너 등 원하는 형태를 선택합니다.</li>
+          <li><strong>디자인 수정</strong> - 색상, 이미지, 텍스트, 혜택카드 등을 자유롭게 편집합니다.</li>
+          <li><strong>다운로드</strong> - 하단 PNG 다운로드 버튼으로 이미지를 저장합니다.</li>
+        </ol>
+      </div>
+
       <div class="preview-wrapper" id="preview-wrapper">
         <div id="preview-canvas"></div>
       </div>

@@ -2621,6 +2621,9 @@
     const normalControls = $('#normal-controls');
     if (biPanel) biPanel.classList.remove('hidden');
     if (normalControls) normalControls.classList.add('hidden');
+    // Show usage guide
+    const usageGuide = $('#usage-guide');
+    if (usageGuide) usageGuide.style.display = '';
     // Hide download & size info
     const previewActions = $('.preview-actions');
     if (previewActions) previewActions.style.display = 'none';
@@ -2637,6 +2640,9 @@
     if (normalControls && !isCompositeTemplate(state.currentTemplate)) {
       normalControls.classList.remove('hidden');
     }
+    // Hide usage guide
+    const usageGuide = $('#usage-guide');
+    if (usageGuide) usageGuide.style.display = 'none';
     // Restore preview UI
     const previewActions = $('.preview-actions');
     if (previewActions) previewActions.style.display = '';
