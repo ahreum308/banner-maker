@@ -440,6 +440,19 @@ const TEMPLATES = {
       const bGap = bCount <= 3 ? 16 : (bCount <= 5 ? 12 : 8);
       const bPadSide = bCount <= 3 ? 80 : (bCount <= 5 ? 60 : 50);
 
+      // 타이틀 높이에 따라 혜택 카드 시작 위치 동적 계산
+      const hOff = data.headlineOffset || { top: 0, bottom: 0, left: 0, right: 0 };
+      const blocks = data.textBlocks || [];
+      let titleHeight = 0;
+      blocks.forEach((b, i) => {
+        const fs = b.fontSize || 18;
+        const lh = (b.fontWeight || 400) >= 700 ? 1.15 : 1.6;
+        titleHeight += fs * lh + (i > 0 ? 8 : 0);
+      });
+      const titleTop = 60 - (hOff.top || 0) + (hOff.bottom || 0);
+      const benefitTop = Math.max(180, titleTop + titleHeight + 40);
+      const benefitBottom = 50;
+
       return `
         <div class="template-root tpl-event-page" style="
           width:${size.width}px; height:${size.height}px;
@@ -461,16 +474,15 @@ const TEMPLATES = {
           <!-- Benefits Section -->
           <div style="
             position:absolute;
-            top:${240 * s}px;
+            top:${benefitTop * s}px;
             left:${bPadSide * s}px;
             right:${bPadSide * s}px;
-            bottom:${50 * s}px;
+            bottom:${benefitBottom * s}px;
             display:flex;
             flex-direction:column;
             gap:${bGap * s}px;
             justify-content:center;
             z-index:3;
-            overflow:hidden;
           ">
             ${benefitsHtml}
           </div>
