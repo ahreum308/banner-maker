@@ -185,7 +185,7 @@ function highlightNumbers(text, color) {
   return text.replace(/(\d[\d,.]*\s*(%|원|만원|천원)?)/g, `<span style="color:${color};">$1</span>`);
 }
 
-function renderBenefitCards(data, s) {
+function renderBenefitCards(data, s, maxCardH) {
   const benefits = data.benefits || [];
   if (benefits.length === 0) return '';
 
@@ -200,11 +200,17 @@ function renderBenefitCards(data, s) {
   const pointColor = bs.pointColor || data.accentColor || '#D4634A';
   const ff = bs.fontFamily ? `font-family:'${bs.fontFamily}',sans-serif;` : '';
 
-  // Manual card height (0 = auto / flex:1)
-  const cardHeight = data.benefitCardHeight || 0;
-  const heightStyle = cardHeight > 0
-    ? `height:${cardHeight * s}px; flex:none;`
-    : `flex:1; min-height:0;`;
+  // Card height: explicit calculation to prevent overflow
+  const manualH = data.benefitCardHeight || 0;
+  let heightStyle;
+  if (manualH > 0) {
+    const h = maxCardH > 0 ? Math.min(manualH, maxCardH) : manualH;
+    heightStyle = `height:${h * s}px;`;
+  } else if (maxCardH > 0) {
+    heightStyle = `height:${maxCardH * s}px;`;
+  } else {
+    heightStyle = `flex:1; min-height:0;`;
+  }
 
   // Card border-radius (default 24)
   const cardRadius = data.benefitCardRadius != null ? data.benefitCardRadius : 24;
@@ -435,7 +441,6 @@ const TEMPLATES = {
 
     renderBenefit(data, size) {
       const s = size.width / 1080;
-      const benefitsHtml = renderBenefitCards(data, s);
       const bCount = (data.benefits || []).length;
       const bGap = bCount <= 3 ? 16 : (bCount <= 5 ? 12 : 8);
       const bPadSide = bCount <= 3 ? 80 : (bCount <= 5 ? 60 : 50);
@@ -452,6 +457,13 @@ const TEMPLATES = {
       const titleTop = 60 - (hOff.top || 0) + (hOff.bottom || 0);
       const benefitTop = Math.max(180, titleTop + titleHeight + 40);
       const benefitBottom = 50;
+
+      // 카드가 잘리지 않도록 가용 높이 기반 카드 높이 계산
+      const designH = size.height / s;
+      const availH = designH - benefitTop - benefitBottom;
+      const totalGaps = bCount > 1 ? (bCount - 1) * bGap : 0;
+      const maxCardH = bCount > 0 ? (availH - totalGaps) / bCount : 0;
+      const benefitsHtml = renderBenefitCards(data, s, maxCardH);
 
       return `
         <div class="template-root tpl-event-page" style="
@@ -481,7 +493,7 @@ const TEMPLATES = {
             display:flex;
             flex-direction:column;
             gap:${bGap * s}px;
-            justify-content:center;
+            justify-content:flex-start;
             z-index:3;
           ">
             ${benefitsHtml}
