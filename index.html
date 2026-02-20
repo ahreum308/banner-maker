@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNS 배너 메이커</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/templates.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <h1 class="app-title">SNS 배너 메이커</h1>
+    <div class="header-right">
+      <button class="header-btn" id="save-project-btn" title="프로젝트 저장">💾 저장</button>
+      <button class="header-btn" id="load-project-btn" title="프로젝트 불러오기">📂 불러오기</button>
+      <input type="file" id="load-project-file" accept=".json" style="display:none;">
+      <span class="header-divider"></span>
+      <label for="size-select" class="size-label">사이즈</label>
+      <select id="size-select" class="size-select">
+        <option value="instagram-post">인스타그램 피드 (1080x1080)</option>
+        <option value="instagram-story">인스타그램 스토리 (1080x1920)</option>
+        <option value="facebook-post">페이스북 게시물 (1200x630)</option>
+        <option value="naver-blog">네이버 블로그 (1200x628)</option>
+        <option value="kakao">카카오톡 공유 (800x400)</option>
+        <option value="custom">직접 입력</option>
+      </select>
+      <div id="custom-size" class="custom-size hidden">
+        <input type="number" id="custom-width" value="1080" min="200" max="4000" class="size-input"> x
+        <input type="number" id="custom-height" value="1080" min="200" max="4000" class="size-input"> px
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Control Panel -->
+    <aside class="control-panel">
+
+      <!-- Basic Info Button (separate section) -->
+      <section class="panel-section panel-section--basic-info-btn">
+        <button class="template-card template-card--basic-info active" data-template="basicInfo">
+          <span class="template-icon">📋</span>
+          <span class="template-name">행사정보 입력</span>
+        </button>
+      </section>
+
+      <!-- Template Selector -->
+      <section class="panel-section">
+        <h2 class="section-title">템플릿 선택</h2>
+        <div class="template-grid template-grid--4col">
+          <button class="template-card" data-template="mainPage">
+            <span class="template-icon">📸</span>
+            <span class="template-name">인스타그램</span>
+          </button>
+          <button class="template-card" data-template="detailPage">
+            <span class="template-icon">📄</span>
+            <span class="template-name">상세페이지</span>
+          </button>
+          <button class="template-card" data-template="popupBanner">
+            <span class="template-icon">💥</span>
+            <span class="template-name">팝업배너</span>
+          </button>
+          <button class="template-card" data-template="freeForm">
+            <span class="template-icon">🎨</span>
+            <span class="template-name">자유 제작</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Basic Info Panel -->
+      <section class="panel-section hidden" id="basic-info-panel">
+        <h2 class="section-title">행사정보 입력</h2>
+        <p class="bi-desc">인스타그램 4페이지(메인/결제혜택/사은품/이벤트) 정보를 한번에 입력하세요.</p>
+
+        <div class="form-group">
+          <label>브랜드 선택</label>
+          <div id="bi-brand-selector"></div>
+          <input type="file" id="bi-brand-logo-file" accept="image/*" class="file-input">
+        </div>
+
+        <div class="bi-divider"></div>
+
+        <div class="form-group">
+          <label for="bi-intro">행사 소개문구</label>
+          <input type="text" id="bi-intro" placeholder="예: 쇼핑라이브 특별 할인">
+        </div>
+
+        <div class="form-group">
+          <label for="bi-title">행사 타이틀</label>
+          <input type="text" id="bi-title" placeholder="예: MEGA SALE">
+        </div>
+
+        <div class="form-group">
+          <label for="bi-datetime">날짜 및 시간 정보</label>
+          <input type="text" id="bi-datetime" placeholder="예: 2024.01.15 (월) 20:00">
+        </div>
+
+        <div class="bi-divider"></div>
+
+        <div class="bi-benefits-section" id="bi-benefits-section">
+          <!-- Rendered dynamically by renderBenefitTabs() -->
+        </div>
+
+        <div class="bi-gen-targets">
+          <p class="bi-desc" style="margin:0; font-size:12px; color:#888;">인스타그램 4페이지(메인/결제혜택/사은품/이벤트)가 생성됩니다.<br>상세페이지와 팝업은 인스타그램 기반으로 자동 생성됩니다.</p>
+        </div>
+        <button class="generate-banner-btn" id="generate-banner-btn">행사배너 생성하기</button>
+      </section>
+
+      <div id="normal-controls">
+
+      <!-- Page Tabs -->
+      <section class="panel-section page-tabs-section" id="page-tabs-section">
+        <div class="page-tabs-row">
+          <div class="page-tabs" id="page-tabs"></div>
+          <button class="page-add-btn" id="add-page-btn" title="페이지 복사 추가">+</button>
+        </div>
+      </section>
+
+      <!-- Background Settings -->
+      <section class="panel-section">
+        <h2 class="section-title">배경 설정</h2>
+
+        <div class="form-group">
+          <div class="bg-type-toggle">
+            <button class="bg-type-btn active" data-bg-type="solid">단색</button>
+            <button class="bg-type-btn" data-bg-type="gradient">그라데이션</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="color-theme-label-row">추천 컬러 세트 <span class="color-theme-btn-group"><button class="color-theme-random-btn" id="color-theme-random-btn" title="새로운 추천 컬러 생성">&#x1F3B2; 랜덤</button><button class="color-theme-apply-all-btn" id="color-theme-apply-all" title="결제혜택/사은품/이벤트 모든 페이지에 적용">전체적용</button></span></label>
+          <div class="color-theme-presets" id="color-theme-presets"></div>
+        </div>
+
+        <div class="form-group">
+          <label>배경색</label>
+          <div class="color-row">
+            <input type="color" id="color-bgColor" data-field="bgColor" class="color-picker">
+            <input type="text" id="hex-bgColor" data-field="bgColor" class="hex-input" maxlength="7">
+            <button class="save-color-btn" data-target="bgColor" title="현재 색상 저장">+</button>
+          </div>
+          <div class="color-swatches" data-target="bgColor">
+            <button class="swatch" data-color="#FF4757"></button>
+            <button class="swatch" data-color="#2D3436"></button>
+            <button class="swatch" data-color="#FAF8F5"></button>
+            <button class="swatch" data-color="#1C2632"></button>
+            <button class="swatch" data-color="#6C5CE7"></button>
+            <button class="swatch" data-color="#00B894"></button>
+          </div>
+          <div class="saved-colors" id="saved-bgColor"></div>
+        </div>
+
+        <div id="gradient-options" class="hidden">
+          <div class="form-group">
+            <label>두 번째 색상</label>
+            <div class="color-row">
+              <input type="color" id="color-bgColor2" class="color-picker" value="#000000">
+              <input type="text" id="hex-bgColor2" class="hex-input" maxlength="7" value="#000000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>방향: <span id="gradient-angle-display">135</span>°</label>
+            <input type="range" id="input-gradientAngle" min="0" max="360" value="135" class="range-slider">
+          </div>
+        </div>
+      </section>
+
+      <!-- Image Settings -->
+      <section class="panel-section">
+        <h2 class="section-title" id="image-section-title">이미지 설정</h2>
+
+        <div id="images-list"></div>
+
+        <button class="add-block-btn" id="add-image">+ 이미지 추가</button>
+        <input type="file" id="global-image-file" accept="image/*" class="file-input" style="display:none;">
+      </section>
+
+      <!-- Benefit Settings (benefit pages) -->
+      <section class="panel-section hidden" id="benefits-section">
+        <h2 class="section-title">혜택 설정</h2>
+
+        <!-- Benefit Style Controls -->
+        <div class="benefit-style-controls">
+          <div class="benefit-style-row">
+            <label>태그 크기</label>
+            <input type="range" id="bs-tagSize" min="10" max="30" value="16" class="range-slider">
+            <span id="bs-tagSize-val" class="range-val">16</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>태그 색상</label>
+            <input type="color" id="bs-tagColor" value="#5A5E4A" class="color-picker">
+          </div>
+          <div class="benefit-style-row">
+            <label>제목 크기</label>
+            <input type="range" id="bs-titleSize" min="16" max="60" value="32" class="range-slider">
+            <span id="bs-titleSize-val" class="range-val">32</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>제목 색상</label>
+            <input type="color" id="bs-titleColor" value="#222222" class="color-picker">
+          </div>
+          <div class="benefit-style-row">
+            <label>포인트 크기</label>
+            <input type="range" id="bs-pointSize" min="12" max="40" value="22" class="range-slider">
+            <span id="bs-pointSize-val" class="range-val">22</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>포인트 색상</label>
+            <input type="color" id="bs-pointColor" value="#D4634A" class="color-picker">
+          </div>
+          <div class="benefit-style-row">
+            <label>내용 크기</label>
+            <input type="range" id="bs-detailSize" min="10" max="36" value="16" class="range-slider">
+            <span id="bs-detailSize-val" class="range-val">16</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>내용 색상</label>
+            <input type="color" id="bs-detailColor" value="#777777" class="color-picker">
+          </div>
+          <div class="benefit-style-row">
+            <label>글꼴</label>
+            <select id="bs-fontFamily" class="font-select"></select>
+          </div>
+          <div class="benefit-style-row">
+            <label>타이틀 높이</label>
+            <input type="range" id="bs-titleY" min="0" max="400" step="5" value="0" class="range-slider">
+            <span id="bs-titleY-val" class="range-val">0</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>텍스트 여백</label>
+            <input type="range" id="bs-textPadLeft" min="0" max="150" step="1" value="0" class="range-slider">
+            <span id="bs-textPadLeft-val" class="range-val">0</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>카드 높이</label>
+            <input type="range" id="bs-cardHeight" min="0" max="400" step="10" value="0" class="range-slider">
+            <span id="bs-cardHeight-val" class="range-val">자동</span>
+          </div>
+          <div class="benefit-style-row">
+            <label>카드 둥글기</label>
+            <input type="range" id="bs-cardRadius" min="0" max="60" step="1" value="24" class="range-slider">
+            <span id="bs-cardRadius-val" class="range-val">24</span>
+          </div>
+          <div class="benefit-style-save-row">
+            <button class="save-bs-btn" id="save-benefit-style">💾 스타일 저장</button>
+          </div>
+        </div>
+
+        <div class="saved-benefit-styles" id="saved-benefit-styles"></div>
+
+        <div class="saved-benefit-images" id="saved-benefit-images"></div>
+
+        <div id="benefits-list"></div>
+        <button class="add-block-btn" id="add-benefit">+ 혜택 추가</button>
+        <input type="file" id="benefit-image-file" accept="image/*" style="display:none;">
+      </section>
+
+      <!-- Brand Settings -->
+      <section class="panel-section" id="brand-section">
+        <h2 class="section-title">브랜드로고</h2>
+
+        <div class="form-group">
+          <label>표시 방식</label>
+          <div class="brand-type-toggle">
+            <button class="brand-type-btn" data-brand-type="text">텍스트</button>
+            <button class="brand-type-btn active" data-brand-type="image">로고 이미지</button>
+          </div>
+        </div>
+
+        <div class="saved-logos" id="saved-logos-container"></div>
+
+        <div class="form-group hidden" id="brand-text-group">
+          <label for="input-brandName">브랜드로고 텍스트</label>
+          <input type="text" id="input-brandName" data-field="brandName" value="">
+          <div style="margin-top:8px;">
+            <label for="input-brandFontSize">브랜드 글씨 크기: <span id="brand-font-size-display">14</span>px</label>
+            <input type="range" id="input-brandFontSize" min="8" max="60" value="14" class="range-slider">
+          </div>
+        </div>
+
+        <div class="form-group" id="brand-logo-group">
+          <label>로고 이미지</label>
+          <div class="image-upload" id="brand-upload">
+            <input type="file" id="brand-file" accept="image/*" class="file-input">
+            <div class="upload-zone" id="brand-zone">
+              <span class="upload-icon">🏢</span>
+              <span class="upload-text">로고 이미지 업로드</span>
+            </div>
+            <div class="upload-preview hidden" id="brand-preview">
+              <img id="brand-thumb" src="" alt="브랜드 로고">
+              <div class="brand-preview-actions">
+                <button class="remove-image" id="remove-brand">이미지 제거</button>
+                <button class="save-logo-btn" id="save-brand-logo">로고 저장</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:8px;">
+            <label for="input-brandLogoHeight">로고 높이: <span id="brand-logo-height-display">60</span>px</label>
+            <input type="range" id="input-brandLogoHeight" min="24" max="200" value="60" class="range-slider">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>로고 위치</label>
+          <div class="headline-position-row">
+            <div class="position-grid position-grid--headline">
+              <button class="pos-btn active" data-pos="top-left" title="상단 좌측"><span class="pos-dot"></span></button>
+              <button class="pos-btn" data-pos="top-center" title="상단 중앙"><span class="pos-dot"></span></button>
+              <button class="pos-btn" data-pos="top-right" title="상단 우측"><span class="pos-dot"></span></button>
+              <button class="pos-btn" data-pos="bottom-left" title="하단 좌측"><span class="pos-dot"></span></button>
+              <button class="pos-btn" data-pos="bottom-center" title="하단 중앙"><span class="pos-dot"></span></button>
+              <button class="pos-btn" data-pos="bottom-right" title="하단 우측"><span class="pos-dot"></span></button>
+            </div>
+            <div class="offset-inputs">
+              <div class="offset-group"><label>상</label><input type="number" id="brand-offset-top" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+              <div class="offset-group"><label>하</label><input type="number" id="brand-offset-bottom" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+              <div class="offset-group"><label>좌</label><input type="number" id="brand-offset-left" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+              <div class="offset-group"><label>우</label><input type="number" id="brand-offset-right" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Text Blocks -->
+      <section class="panel-section">
+        <h2 class="section-title">텍스트 설정</h2>
+
+        <div id="text-blocks-list"></div>
+
+        <button class="add-block-btn" id="add-text-block">+ 텍스트 추가</button>
+
+        <div class="form-group" style="margin-top:12px;">
+          <label>텍스트 위치</label>
+          <div class="headline-position-row">
+            <div class="position-grid position-grid--headline">
+              <button class="hpos-btn" data-pos="top-left" title="상단 좌측"><span class="pos-dot"></span></button>
+              <button class="hpos-btn" data-pos="top-center" title="상단 중앙"><span class="pos-dot"></span></button>
+              <button class="hpos-btn" data-pos="top-right" title="상단 우측"><span class="pos-dot"></span></button>
+              <button class="hpos-btn active" data-pos="bottom-left" title="하단 좌측"><span class="pos-dot"></span></button>
+              <button class="hpos-btn" data-pos="bottom-center" title="하단 중앙"><span class="pos-dot"></span></button>
+              <button class="hpos-btn" data-pos="bottom-right" title="하단 우측"><span class="pos-dot"></span></button>
+            </div>
+            <div class="offset-inputs">
+              <div class="offset-group"><label>상</label><input type="number" id="offset-top" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+              <div class="offset-group"><label>하</label><input type="number" id="offset-bottom" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+              <div class="offset-group"><label>좌</label><input type="number" id="offset-left" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+              <div class="offset-group"><label>우</label><input type="number" id="offset-right" value="0" class="offset-input"> <span class="offset-unit">px</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Text Addition -->
+      <section class="panel-section">
+        <h2 class="section-title">텍스트 추가</h2>
+
+        <div class="form-group" id="group-productName" style="display:none;">
+          <input type="hidden" id="input-productName" data-field="productName" value="">
+        </div>
+
+        <div class="form-group" id="group-discountBadge">
+          <label for="input-discountBadge">할인율 / 뱃지</label>
+          <input type="text" id="input-discountBadge" data-field="discountBadge" value="">
+        </div>
+
+        <div class="form-group" id="group-originalPrice">
+          <label for="input-originalPrice">정가</label>
+          <input type="text" id="input-originalPrice" data-field="originalPrice" value="">
+        </div>
+
+        <div class="form-group" id="group-salePrice">
+          <label for="input-salePrice">할인가</label>
+          <input type="text" id="input-salePrice" data-field="salePrice" value="">
+        </div>
+
+        <div class="form-group" id="group-eventPeriod">
+          <label for="input-eventPeriod">이벤트 기간</label>
+          <input type="text" id="input-eventPeriod" data-field="eventPeriod" value="">
+        </div>
+
+        <!-- Extra Texts (mainPage) -->
+        <div id="extra-texts-section" class="hidden">
+          <div id="extra-texts-list"></div>
+          <button class="add-block-btn" id="add-extra-text">+ 텍스트 추가</button>
+        </div>
+
+        <div class="form-group" id="group-giftName">
+          <label for="input-giftName">증정품명</label>
+          <input type="text" id="input-giftName" data-field="giftName" value="">
+        </div>
+
+        <div class="form-group" id="group-condition">
+          <label for="input-condition">참여 조건</label>
+          <input type="text" id="input-condition" data-field="condition" value="">
+        </div>
+      </section>
+
+      <!-- Button Text -->
+      <section class="panel-section" id="button-text-section">
+        <h2 class="section-title">버튼 텍스트</h2>
+
+        <div class="form-group" id="group-ctaText">
+          <label for="input-ctaText">버튼 텍스트</label>
+          <input type="text" id="input-ctaText" data-field="ctaText" value="">
+        </div>
+
+        <div class="form-group">
+          <label>글자 크기 <span id="cta-fontSize-val" class="range-val">16</span></label>
+          <input type="range" id="cta-fontSize" min="10" max="36" value="16" class="range-slider">
+        </div>
+
+        <div class="form-group">
+          <label>위치 (하단여백) <span id="cta-bottomOffset-val" class="range-val">80</span></label>
+          <input type="range" id="cta-bottomOffset" min="10" max="400" value="80" class="range-slider">
+        </div>
+
+        <div class="form-group">
+          <label>버튼배경컬러</label>
+          <div class="color-row">
+            <input type="color" id="color-accentColor" data-field="accentColor" class="color-picker">
+            <input type="text" id="hex-accentColor" data-field="accentColor" class="hex-input" maxlength="7">
+            <button class="save-color-btn" data-target="accentColor" title="현재 색상 저장">+</button>
+          </div>
+          <div class="color-swatches" data-target="accentColor">
+            <button class="swatch" data-color="#FFE066"></button>
+            <button class="swatch" data-color="#FF6348"></button>
+            <button class="swatch" data-color="#A3CB38"></button>
+            <button class="swatch" data-color="#00D2D3"></button>
+            <button class="swatch" data-color="#F8A5C2"></button>
+            <button class="swatch" data-color="#FD79A8"></button>
+          </div>
+          <div class="saved-colors" id="saved-accentColor"></div>
+        </div>
+      </section>
+
+      </div><!-- /normal-controls -->
+
+    </aside>
+
+    <!-- Preview Area -->
+    <div class="preview-area">
+      <div class="preview-wrapper" id="preview-wrapper">
+        <div id="preview-canvas"></div>
+      </div>
+      <div class="preview-actions">
+        <span class="preview-size-info" id="size-info">1080 x 1080 px</span>
+        <button class="download-btn" id="download-btn">
+          <span class="download-icon">&#x1F4BE;</span>
+          PNG 다운로드
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/templates.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

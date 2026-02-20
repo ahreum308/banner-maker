@@ -1,0 +1,39 @@
+/* ==========================================
+   Template Styles
+   Scoped per template class. These styles are
+   applied inside the preview canvas.
+   ========================================== */
+
+.template-root {
+  font-family: 'Noto Sans KR', -apple-system, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.template-root * {
+  box-sizing: border-box;
+}
+
+.template-root img {
+  display: block;
+}
+
+/* ========== Sale Template ========== */
+.tpl-sale {
+  /* Styles are inline for dynamic sizing */
+}
+
+/* ========== New Product Template ========== */
+.tpl-new-product {
+  /* Clean, premium feel */
+}
+
+/* ========== Seasonal Template ========== */
+.tpl-seasonal {
+  /* Gradient-based, handled inline */
+}
+
+/* ========== BOGO Template ========== */
+.tpl-bogo {
+  /* Fun, playful pattern */
+}
